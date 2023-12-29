@@ -689,7 +689,7 @@ screen and (min-width: 1100px) {
 
 /* Default colors */
 body {
-    --text-color: #333;
+    --text-color: #1bb1d6;
     --bg-color: #fff;
     --bg-color-secondary: #f1f3f4;
 }
