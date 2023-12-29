@@ -5,7 +5,7 @@ Just the original [Snapdrop](https://github.com/RobinLinus/Snapdrop), with compl
 - To get started, clone and cd the repo:
   
 ```bash
-git clone git@github.com:majnioui/DropLive.app.git && cd DropLive.app
+git clone git@github.com:majnioui/DropLive.git && cd DropLive
 ```
 - Install all dependencies with NPM:
 
