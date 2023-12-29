@@ -1,4 +1,5 @@
-Just the original [Snapdrop](https://github.com/RobinLinus/Snapdrop), with complete Node.js server.
+Just the original [Snapdrop](https://github.com/RobinLinus/Snapdrop), with complete Node.js server
+Forked from [Node-Snapdrop]([https://github.com/RobinLinus/Snapdrop](https://github.com/Bellisario/node-snapdrop)) https://github.com/Bellisario/node-snapdrop
 
 ## Getting started
 
