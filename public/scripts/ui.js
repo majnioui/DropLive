@@ -391,96 +391,6 @@ class Toast extends Dialog {
         setTimeout(_ => this.hide(), 3000);
     }
 }
-
-
-class Notifications {
-
-    constructor() {
-        // Check if the browser supports notifications
-        if (!('Notification' in window)) return;
-
-        // Check whether notification permissions have already been granted
-        if (Notification.permission !== 'granted') {
-            this.$button = $('notification');
-            this.$button.removeAttribute('hidden');
-            this.$button.addEventListener('click', e => this._requestPermission());
-        }
-        Events.on('text-received', e => this._messageNotification(e.detail.text));
-        Events.on('file-received', e => this._downloadNotification(e.detail.name));
-    }
-
-    _requestPermission() {
-        Notification.requestPermission(permission => {
-            if (permission !== 'granted') {
-                Events.fire('notify-user', Notifications.PERMISSION_ERROR || 'Error');
-                return;
-            }
-            this._notify('Even more snappy sharing!');
-            this.$button.setAttribute('hidden', 1);
-        });
-    }
-
-    _notify(message, body, closeTimeout = 20000) {
-        const config = {
-            body: body,
-            icon: '/images/logo_transparent_128x128.png',
-        }
-        let notification;
-        try {
-            notification = new Notification(message, config);
-        } catch (e) {
-            // Android doesn't support "new Notification" if service worker is installed
-            if (!serviceWorker || !serviceWorker.showNotification) return;
-            notification = serviceWorker.showNotification(message, config);
-        }
-
-        // Notification is persistent on Android. We have to close it manually
-        if (closeTimeout) {
-            setTimeout(_ => notification.close(), closeTimeout);
-        }
-
-        return notification;
-    }
-
-    _messageNotification(message) {
-        if (isURL(message)) {
-            const notification = this._notify(message, 'Click to open link');
-            this._bind(notification, e => window.open(message, '_blank', null, true));
-        } else {
-            const notification = this._notify(message, 'Click to copy text');
-            this._bind(notification, e => this._copyText(message, notification));
-        }
-    }
-
-    _downloadNotification(message) {
-        const notification = this._notify(message, 'Click to download');
-        if (!window.isDownloadSupported) return;
-        this._bind(notification, e => this._download(notification));
-    }
-
-    _download(notification) {
-        document.querySelector('x-dialog [download]').click();
-        notification.close();
-    }
-
-    _copyText(message, notification) {
-        notification.close();
-        if (!navigator.clipboard.writeText(message)) return;
-        this._notify('Copied text to clipboard');
-    }
-
-    _bind(notification, handler) {
-        if (notification.then) {
-            notification.then(e => serviceWorker.getNotifications().then(notifications => {
-                serviceWorker.addEventListener('notificationclick', handler);
-            }));
-        } else {
-            notification.onclick = handler;
-        }
-    }
-}
-
-
 class NetworkStatusUI {
 
     constructor() {
@@ -528,7 +438,6 @@ class Snapdrop {
             const sendTextDialog = new SendTextDialog();
             const receiveTextDialog = new ReceiveTextDialog();
             const toast = new Toast();
-            const notifications = new Notifications();
             const networkStatusUI = new NetworkStatusUI();
             const webShareTargetUI = new WebShareTargetUI();
         });
@@ -536,28 +445,6 @@ class Snapdrop {
 }
 
 const snapdrop = new Snapdrop();
-
-
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-        .then(serviceWorker => {
-            console.log('Service Worker registered');
-            window.serviceWorker = serviceWorker
-        });
-}
-
-window.addEventListener('beforeinstallprompt', e => {
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-        // don't display install banner when installed
-        return e.preventDefault();
-    } else {
-        const btn = document.querySelector('#install')
-        btn.hidden = false;
-        btn.onclick = _ => e.prompt();
-        return e.preventDefault();
-    }
-});
 
 // Background Animation
 Events.on('load', () => {
@@ -622,12 +509,6 @@ Events.on('load', () => {
     init();
     animate();
 });
-
-Notifications.PERMISSION_ERROR = `
-Notifications permission has been blocked
-as the user has dismissed the permission prompt several times.
-This can be reset in Page Info
-which can be accessed by clicking the lock icon next to the URL.`;
 
 document.body.onclick = e => { // safari hack to fix audio
     document.body.onclick = null;
